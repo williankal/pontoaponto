@@ -64,7 +64,7 @@ def makePacote(arquivo,com1):
         print("-------------------------")
         print("número do pacote: {}".format(headInt[4]))
         time.sleep(0.5)
-        if headInt[2] == headInt[4]+1:
+        if headInt[3] == headInt[4]+1:
             headInt[5] = headInt[2]
         else:
             headInt[5] = 114
@@ -93,7 +93,7 @@ def recebePacotes(arquivo, com1):
         arquivo += payload
         eop, lenEOP = com1.getData(4)
         i += 1
-        if head[2] == head[4]+1:
+        if head[3] == head[4]+1:
             break
     
     return arquivo
