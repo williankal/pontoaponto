@@ -32,15 +32,18 @@ def int_1_byte(data):
 
 def makeHead(arquivo, tipo):
     """Se tipo = 0 é handshake se tipo != 0 é parte do arquivo"""
-    tamanhoBytes = len(arquivo)
-    print(f"O arquivo tem {tamanhoBytes} bytes" )
-    qtdPayloads = math.ceil(tamanhoBytes/114)
-    print(f"Quantidade de Pacotes: {qtdPayloads}")
-    tamUltimoPacote = tamanhoBytes - 114*(qtdPayloads-1)
+    tamanhoArquivo = len(arquivo)
+    print(f"O arquivo tem {tamanhoArquivo} bytes" )
+    qtdPacotes = math.ceil(tamanhoArquivo/114)
+    print(f"Quantidade de Pacotes: {qtdPacotes}")
+    tamUltimoPacote = tamanhoArquivo - 114*(qtdPacotes-1)
     print(f"Tamanho do último pacote: {tamUltimoPacote}")
     pacoteAtual = 0
-
-    heads = [0, tamanhoBytes, qtdPayloads, tamUltimoPacote,pacoteAtual,0, 0, 255, 0, 0]
+    tipoMensagem = 0
+    tamanhoPacoteAtual = 0
+    numeroErrro = 0
+    ultimoSucesso = 0
+    heads = [tipoMensagem, tamanhoArquivo, tamUltimoPacote, qtdPacotes ,pacoteAtual,tamanhoPacoteAtual, numeroErrro, ultimoSucesso, 0, 0]
 
     
     return heads
@@ -62,7 +65,7 @@ def makePacote(arquivo,com1):
         print("número do pacote: {}".format(headInt[4]))
         time.sleep(0.5)
         if headInt[2] == headInt[4]+1:
-            headInt[5] = headInt[3]
+            headInt[5] = headInt[2]
         else:
             headInt[5] = 114
         headByte = int_1_byte(headInt)
@@ -85,8 +88,6 @@ def recebePacotes(arquivo, com1):
         print("......")
         print("head recebido: ", head[4])
         print(head[5])
-        if head[4] != i:
-            print("Erro enviar de novo pacote: ", i)
         payload, lenPayload = com1.getData(head[5])
         print(payload)
         arquivo += payload
