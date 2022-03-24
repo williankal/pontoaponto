@@ -2,7 +2,8 @@ from enlace import *
 import numpy as np
 import time
 
-from functions import *
+from functions_client import *
+from functions_server import *
 
 #Comando para abrir port:   sudo chmod 777 /dev/ttyACM<numero da porta>
 #Declarar porta utilizada aqui
@@ -13,37 +14,34 @@ serialName = "/dev/ttyACM0"
 def main():
     try:
         com1, start_time = ligaCom(serialName)
-
-
-        while com1.rx.getIsEmpty():
-            print("------------")
-            print("Esperando.....")
+        espera(com1)
+        ocioso = False
+        while ocioso == False:
+            while com1.rx.getIsEmpty():
+                print("------------")
+                print("Esperando.....")
             time.sleep(0.2)
+            recebeHandshake = bytearray()
+            recebeHandshake, idHand = recebePacotesHandshake(recebeHandshake, com1)
+            if idHand == 11:
+                if recebeHandshake == b'\x00\x00\xff\xff':
+                    print("Devolvendo Handshake")
+                    handshakeInt = [0,0,255, 255]
+                    handshakeByte = int_1_byte(handshakeInt)
+                    primeiro = makePacoteServer(handshakeByte, com1, 2)
+                    com1.sendData(primeiro)
+                    print(idHand)
+                    ocioso = True
+                else: 
+                    print("Erro no Handshake")
+                    ocioso = False
+                    time.sleep(1)
+            else: 
+                print("Erro no Handshake")
+                ocioso = False
+                time.sleep(1)
 
 
-        recebeHandshake = bytearray()
-        recebeHandshake = recebePacotes(recebeHandshake, com1)
-            
-
-
-        if recebeHandshake == b'\x00\x00\xff\xff':
-            print("Devolvendo Handshake")
-            handshakeInt = [0,0,255, 255]
-            handshakeByte = int_1_byte(handshakeInt)
-            primeiro = makePacote(handshakeByte, com1)
-            com1.sendData(primeiro)
-
-        else: 
-            print("Erro no Handshake")
-            handshakeInt = [255, 255, 0, 0]
-            handshakeByte = int_1_byte(handshakeInt)
-            primeiro = makePacote(handshakeByte, com1)
-            com1.sendData(primeiro)
-
-        #finalmente vamos transmitir os tados. Para isso usamos a funçao sendData que é um método da camada enlace.
-        #faça um print para avisar que a transmissão vai começar.
-        #tente entender como o método send funciona!
-        #Cuidado! Apenas trasmitimos arrays de bytes! Nao listas!
         imagemRecebida = bytearray()
         imagemRecebida = recebePacotes(imagemRecebida, com1)
             
