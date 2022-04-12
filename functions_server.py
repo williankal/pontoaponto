@@ -2,6 +2,7 @@ from enlace import *
 import numpy as np
 import math
 from functions_client import *
+import datetime
 
 def espera(com1):
     while com1.rx.getIsEmpty():
@@ -125,3 +126,21 @@ def recebePacotesHandshake(arquivo, com1):
 
     
     return arquivo, head[2]
+
+def write_log(envioRecebido, package):
+    with open("Server3.txt", "a+") as file:
+        file.write("\n")
+        file.write("{}".format(datetime.datetime.now()))
+        file.write("\n")
+        file.write(" /")
+        file.write(envioRecebido)
+        file.write(" /")
+        file.write(package[0])
+        file.write(" /")
+        file.write("{}".format(len(package)))
+        if package[0] == 3:
+            file.write(" /")
+            file.write(package[4])
+            file.write(" /")
+            file.write(package[3])
+
