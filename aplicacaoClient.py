@@ -20,24 +20,7 @@ def main():
             print("Enviando Handshake")
             handshakeInt = [0, 0, 255, 255]
             handshakeByte = int_1_byte(handshakeInt)
-            primeiro = makePacoteClient(handshakeByte, com1, 1, qIm)
-            com1.sendData(primeiro)
-            time.sleep(5)
-            inicio = time.time()
-            print("------------------------------")
-
-            while com1.rx.getIsEmpty():#Comando para abrir port :sudo chmod 777 /dev/ttyACM<numero da porta>
-                    if time.time() - inicio >= 5:
-                        resposta = str(input("Servidor inativo, deseja tentar novamente? S/N : "))
-                        if resposta.upper() == "S":
-                            com1.sendData(primeiro)
-                            inicio = time.time()
-                            pass
-                        else:
-                            desligaCom(com1, start_time)
-                            exit()
-
-            print("Confirmação Recbida")
+            makePacoteHead(handshakeByte, com1, 1, qIm)
             headHandshake, lenteste = com1.getData(10)
             print(headHandshake)
             payloadHandshake, lenteste  = com1.getData(4)

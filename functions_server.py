@@ -49,8 +49,6 @@ def makeHead(arquivo, tipoMensagem):
     elif tipoMensagem == 6:
         #Erro
         heads = [tipoMensagem, tamanhoArquivo, tamUltimoPacote, qtdPacotes ,pacoteAtual,tamanhoPacoteAtual, numeroErrro, ultimoSucesso, 0, 0]
-
-    
     return heads
     
 

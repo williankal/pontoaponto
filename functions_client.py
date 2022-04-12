@@ -30,9 +30,9 @@ def int_1_byte(data):
     return entireData
 
 
-def makeHead(arquivo, tipoMensagem, qIm):
+def makeHead(arquivo, tipoMensagem, qtdPacotes, original):
     """Se tipo = 0 é handshake se tipo != 0 é parte do arquivo"""
-    tamanhoArquivo = len(arquivo)
+    tamanhoArquivo = len(original)
     print(f"O arquivo tem {tamanhoArquivo} bytes" )
     qtdPacotes = math.ceil(tamanhoArquivo/114)
     print(f"Quantidade de Pacotes: {qtdPacotes}")
@@ -46,60 +46,97 @@ def makeHead(arquivo, tipoMensagem, qIm):
     confirma4 = 0
     if tipoMensagem == 1:
         #Handshake
-        heads = [tipoMensagem, tamanhoArquivo, idServidor, qIm ,pacoteAtual,tamanhoPacoteAtual, numeroErrro, ultimoSucesso, 0, 0]
+        heads = [tipoMensagem, 0, idServidor, qtdPacotes ,pacoteAtual,tamanhoPacoteAtual, numeroErrro, ultimoSucesso, 0, 0]
     elif tipoMensagem == 2:
         #Confirmação Handshake
-        heads = [tipoMensagem, tamanhoArquivo, tamUltimoPacote, qtdPacotes ,pacoteAtual,tamanhoPacoteAtual, numeroErrro, ultimoSucesso, 0, 0]
+        heads = [tipoMensagem, 0, tamUltimoPacote, qtdPacotes ,pacoteAtual,tamanhoPacoteAtual, numeroErrro, ultimoSucesso, 0, 0]
     elif tipoMensagem == 3:
         #Dados
-        heads = [tipoMensagem, tamanhoArquivo, tamUltimoPacote, qtdPacotes ,pacoteAtual,tamanhoPacoteAtual, numeroErrro, ultimoSucesso, 0, 0]
+        heads = [tipoMensagem, 0, tamUltimoPacote, qtdPacotes ,pacoteAtual,tamanhoPacoteAtual, numeroErrro, ultimoSucesso, 0, 0]
     elif tipoMensagem == 4:
         #Confirmação de dados
-        heads = [tipoMensagem, tamanhoArquivo, confirma4, qtdPacotes ,pacoteAtual,tamanhoPacoteAtual, numeroErrro, ultimoSucesso, 0, 0]
+        heads = [tipoMensagem, 0, confirma4, qtdPacotes ,pacoteAtual,tamanhoPacoteAtual, numeroErrro, ultimoSucesso, 0, 0]
     elif tipoMensagem == 5:
         #TimeOut
-        heads = [tipoMensagem, tamanhoArquivo, tamUltimoPacote, qtdPacotes ,pacoteAtual,tamanhoPacoteAtual, numeroErrro, ultimoSucesso, 0, 0]
+        heads = [tipoMensagem, 0, tamUltimoPacote, qtdPacotes ,pacoteAtual,tamanhoPacoteAtual, numeroErrro, ultimoSucesso, 0, 0]
     elif tipoMensagem == 6:
         #Erro
-        heads = [tipoMensagem, tamanhoArquivo, tamUltimoPacote, qtdPacotes ,pacoteAtual,tamanhoPacoteAtual, numeroErrro, ultimoSucesso, 0, 0]
+        heads = [tipoMensagem, 0, tamUltimoPacote, qtdPacotes ,pacoteAtual,tamanhoPacoteAtual, numeroErrro, ultimoSucesso, 0, 0]
 
-    
     return heads
     
 
 
-def makePacoteClient(arquivo,com1, tipo, qIm):
-    headInt = makeHead(arquivo,tipo, qIm)
+def makePacoteHead(arquivo,com1, tipo, qIm):
+    headInt = makeHead(arquivo,tipo, qIm, arquivo)
+    headInt[5] = 4 
     eopInt = [170,187,204,221]
     eopByte = int_1_byte(eopInt)
     time.sleep(2)
-    confirma4 = 4
-    for i in range(0, headInt[3]):
-        if confirma4[0] == 4:
-            payload = arquivo[:114]
-            del arquivo[:114]
-            print("Payload feito")
-            headInt[1] = len(payload)
-
-            print("-------------------------")
-            print("número do pacote: {}".format(headInt[4]))
-            time.sleep(0.5)
-            if headInt[3] == headInt[4]:
-                headInt[5] = headInt[2]
+    headByte = int_1_byte(headInt)
+    print(headInt)
+    payload = arquivo[:114]
+    print(headByte)
+    pacote = headByte + payload + eopByte
+    com1.sendData(pacote)
+    print(pacote)    
+    print("-----------------")
+    print("Pacote enviado: ", len(pacote))
+    print("-----------------")
+    print("primeiro enviado")
+    time.sleep(5)
+    inicio = time.time()
+    print("------------------------------")
+    while com1.rx.getIsEmpty():#Comando para abrir port :sudo chmod 777 /dev/ttyACM<numero da porta>
+        if time.time() - inicio >= 5:
+            resposta = str(input("Servidor inativo, deseja tentar novamente? S/N : "))
+            if resposta.upper() == "S":
+                com1.sendData(pacote)
+                print("enviado novamente")
+                inicio = time.time()
+                pass
             else:
-                headInt[5] = 114
-            headByte = int_1_byte(headInt)
-            print(headInt)
-            headInt[4] += 1
-            print(headByte)
-            pacote = headByte + payload + eopByte
-            print(pacote)
-            com1.sendData(pacote)
+                desligaCom(com1, inicio)
+                exit()
+
+def makePacoteClient(arquivo,com1, tipo, qtdPacotes):
+    tIm = len(arquivo)
+    qtdPacotes = math.ceil(tIm/114)
+    eopInt = [170,187,204,221]
+    eopByte = int_1_byte(eopInt)
+    arquivoo = arquivo
+    i = 0
+    while i <= qtdPacotes:
+        headInt = makeHead(arquivo,tipo, qtdPacotes, arquivoo)
+        payload = arquivo[:114]
+        if headInt[3] == headInt[4]:
+            headInt[5] = headInt[2]
+        else:
+            headInt[5] = 114
+        print(f"Tamanho do arquivo {i+1} é {headInt[5]}")
+        headInt[4] += i
+        print("Head atual: ", headInt)
+        headByte = int_1_byte(headInt)
+        print(headByte)
+        pacote = headByte + payload + eopByte
+        print(pacote)
+        com1.sendData(pacote)
+        
+        print("-----------------")
+        print("Pacote enviado: ", len(pacote))
+        print("-----------------")
+        confirma4, tipo4 = com1.getData(18)
+        print("PAYLOAD RECEBIDO: ", confirma4)
+        if confirma4[0] == 4:
+            print("TIPO DE MENSAGEM: ", confirma4[0]  )
+            del arquivo[:114]
+            headInt[1] = len(payload)
+            print("-------------------------")
+            i +=1
+        else:
+            break
+
             
-            print("-----------------")
-            print("Pacote enviado: ", len(pacote))
-            print("-----------------")
-            confirma4, tipo4 = com1.getData(18)
 
 
 def recebePacotes(arquivo, com1):
