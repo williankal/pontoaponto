@@ -97,7 +97,6 @@ def recebePacotes(arquivo, com1):
         print(payload)
         arquivo += payload
         eop, lenEOP = com1.getData(4)
-        if len(payload) = 
         confirmaInt = [0, 0, 255, 255]
         confirmaByte = int_1_byte(confirmaInt)
         primeiro = makePacoteClient(confirmaByte, com1, 4, 0)
@@ -120,10 +119,6 @@ def recebePacotesHandshake(arquivo, com1):
         i += 1
         if head[3] == head[4]:
             break
-        return arquivo
-
-
-
     
     return arquivo, head[2]
 
