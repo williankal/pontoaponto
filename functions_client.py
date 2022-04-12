@@ -73,43 +73,34 @@ def makePacoteClient(arquivo,com1, tipo, qIm):
     eopInt = [170,187,204,221]
     eopByte = int_1_byte(eopInt)
     time.sleep(2)
+    confirma4 = 4
     for i in range(0, headInt[3]):
-        payload = arquivo[:114]
-        del arquivo[:114]
-        print("Payload feito")
-        headInt[1] = len(payload)
-
-        print("-------------------------")
-        print("número do pacote: {}".format(headInt[4]))
-        time.sleep(0.5)
-        if headInt[3] == headInt[4]:
-            headInt[5] = headInt[2]
-        else:
-            headInt[5] = 114
-        headByte = int_1_byte(headInt)
-        print(headInt)
-        headInt[4] += 1
-        print(headByte)
-        pacote = headByte + payload + eopByte
-        print(pacote)
-        com1.sendData(pacote)
-        
-        print("-----------------")
-        print("Pacote enviado: ", len(pacote))
-        print("-----------------")
-        inicio = time.time()
-        while com1.rx.getIsEmpty():#Comando para abrir port :sudo chmod 777 /dev/ttyACM<numero da porta>
-            if time.time() - inicio <= 5:
-                resposta = str(input("Timeout! Eperar? S/N"))
-                if resposta.upper() == "S":
-                    inicio = time.time()
-                    confirma4, tipo4 = com1.getData(18)
-                    pass
-                else:
-                    desligaCom(com1, time.time())
-                    exit()
         if confirma4[0] == 4:
-            #ESCREVER AQUI
+            payload = arquivo[:114]
+            del arquivo[:114]
+            print("Payload feito")
+            headInt[1] = len(payload)
+
+            print("-------------------------")
+            print("número do pacote: {}".format(headInt[4]))
+            time.sleep(0.5)
+            if headInt[3] == headInt[4]:
+                headInt[5] = headInt[2]
+            else:
+                headInt[5] = 114
+            headByte = int_1_byte(headInt)
+            print(headInt)
+            headInt[4] += 1
+            print(headByte)
+            pacote = headByte + payload + eopByte
+            print(pacote)
+            com1.sendData(pacote)
+            
+            print("-----------------")
+            print("Pacote enviado: ", len(pacote))
+            print("-----------------")
+            confirma4, tipo4 = com1.getData(18)
+
 
 def recebePacotes(arquivo, com1):
     i = 0
