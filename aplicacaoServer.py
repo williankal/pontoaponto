@@ -16,6 +16,7 @@ def main():
         com1, start_time = ligaCom(serialName)
         espera(com1)
         ocioso = True
+        timeout = True
         while ocioso == True:
             while com1.rx.getIsEmpty():
                 print("------------")
@@ -25,7 +26,9 @@ def main():
             recebeHandshake, idHand = recebePacotesHandshake(recebeHandshake, com1)
             
             
-            print("---------------------------------RECEBEU HANDSHAKE")
+            print("---------------------------------")
+            print("HandShake RECEBIDO")
+            print("---------------------------------")
             if idHand == 11:
                 if recebeHandshake == b'\x00\x00\xff\xff':
                     print("Devolvendo Handshake")
@@ -45,7 +48,13 @@ def main():
                 time.sleep(1)
 
         
-            imagemRecebida, ocioso = recebePacotes(com1, ocioso)
+            imagemRecebida, ocioso, timeout = recebePacotes(com1, ocioso, timeout)
+        
+        if timeout == False:
+            print("------------")
+            print("Tempo de time out atingido")
+            print("Finalizando coms")
+            quit()
                 
         imagemW = "./imgs/recebida.png"
         print("Salvando dados no arquivo")

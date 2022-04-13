@@ -1,3 +1,4 @@
+from operator import truediv
 from re import X
 from enlace import *
 import numpy as np
@@ -81,9 +82,6 @@ def makePacoteServer(arquivo, com1, tipo):
         headInt[4] += 1
         print(headByte)
         pacote = headByte + eopByte
-        print("-----------------")
-        print(pacote)
-        print("|||||||||")
         com1.sendData(pacote)
         
         print("-----------------")
@@ -122,7 +120,7 @@ def recebePacotesHandshake(arquivo, com1):
         else: 
             break
 
-def recebePacotes(com1, ocioso):
+def recebePacotes(com1, ocioso, timeout):
     contador = 1
     x = [170,187,204,221]
     byte1 = int_1_byte(x)
@@ -152,28 +150,28 @@ def recebePacotes(com1, ocioso):
                 if contador == head[3]:
                     ocioso = False
                     print(imagemRece)
-                    return imagemRece, ocioso
-                    break
+                    return imagemRece, ocioso, True
                 contador += 1
 
 
             else:
                 makePacoteServer(byte1, com1, 6)
+
         else: 
             time.sleep(1)
             if time.time() - time2 > 20:
                 ocioso = True
                 makePacoteServer(byte1, com1, 5)
-                return imagemRece, ocioso
+                return imagemRece, ocioso, False
 
             else:
                 if time.time() - time1 > 2:
                     makePacoteServer(byte1, com1, 4)  
                     time1 = time.time() 
 
-    return imagemRece
+    return imagemRece, ocioso, True
 
-def write_log(envioRecebido, package, tipo_log, ServerClient):
+def write_log(envioRecebido, package, erro, ServerClient):
     tipo_log_string = str(tipo_log)
     arquivo = "a"
     arquivo = ServerClient + tipo_log_string + ".txt"
