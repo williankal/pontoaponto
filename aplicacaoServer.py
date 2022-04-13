@@ -15,36 +15,38 @@ def main():
     try:
         com1, start_time = ligaCom(serialName)
         espera(com1)
-        ocioso = False
-        while ocioso == False:
+        ocioso = True
+        while ocioso == True:
             while com1.rx.getIsEmpty():
                 print("------------")
                 print("Esperando.....")
             time.sleep(0.2)
             recebeHandshake = bytearray()
             recebeHandshake, idHand = recebePacotesHandshake(recebeHandshake, com1)
+            
+            
+            print("---------------------------------RECEBEU HANDSHAKE")
             if idHand == 11:
                 if recebeHandshake == b'\x00\x00\xff\xff':
                     print("Devolvendo Handshake")
-                    handshakeInt = [0,0,255, 255]
+                    handshakeInt = [0, 0, 255, 255]
                     handshakeByte = int_1_byte(handshakeInt)
-                    primeiro = makePacoteServer(handshakeByte, com1, 2)
-                    com1.sendData(primeiro)
-                    print(idHand)
-                    ocioso = True
+                    primeiro = makePacoteHead(handshakeByte, com1, 2)
+                    print("----------")
+                    print("Escutando")
+                    ocioso = False
                 else: 
                     print("Erro no Handshake")
-                    ocioso = False
+                    ocioso = True
                     time.sleep(1)
             else: 
                 print("Erro no Handshake")
-                ocioso = False
+                ocioso = True
                 time.sleep(1)
 
-
-        imagemRecebida = bytearray()
-        imagemRecebida = recebePacotes(imagemRecebida, com1)
-            
+        
+            imagemRecebida, ocioso = recebePacotes(com1, ocioso)
+                
         imagemW = "./imgs/recebida.png"
         print("Salvando dados no arquivo")
         print("- {}".format(imagemW))
