@@ -2,7 +2,7 @@ from enlace import *
 import numpy as np
 import time
 from functions_client import *
-from functions_server import *
+
 
 
 #Comando para abrir port:   sudo chmod 777 /dev/ttyACM<numero da porta>
@@ -20,21 +20,11 @@ def main():
             print("Enviando Handshake")
             handshakeInt = [0, 0, 255, 255]
             handshakeByte = int_1_byte(handshakeInt)
-            makePacoteHead(handshakeByte, com1, 1)
-            headHandshake, lenteste = com1.getData(10)
-            print(headHandshake)
-            payloadHandshake, lenteste  = com1.getData(4)
-            print(payloadHandshake)
-            eopHandshake, lenteste = com1.getData(4)
-            print(eopHandshake)
-            print("Handshake recebido: ", (headHandshake+payloadHandshake+eopHandshake))
+            makePacoteHead(handshakeByte, com1, 1, 0)
+            headHandshake, lenteste = com1.getData(18)
+            write_log("recebe", headHandshake, "Client1" )
+            print("Handshake recebido: ", (headHandshake))
 
-            if  payloadHandshake == b'\x00\x00\xff\xff' and headHandshake[0] == 2:
-                print("----------------")
-                print("Confirmado")
-            else: 
-                print("FALHA EM HANDSHAKE")
-                quit()
             
             imageR = "./imgs/image.png"
 

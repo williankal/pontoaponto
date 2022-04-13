@@ -148,6 +148,7 @@ def recebePacotes(com1, ocioso, timeout):
                 imagemRece += payload
                 print(payload)
                 if contador == head[3]:
+                    write_log()
                     ocioso = False
                     print(imagemRece)
                     return imagemRece, ocioso, True
@@ -171,22 +172,20 @@ def recebePacotes(com1, ocioso, timeout):
 
     return imagemRece, ocioso, True
 
-def write_log(envioRecebido, package, erro, ServerClient):
-    tipo_log_string = str(tipo_log)
+def write_log(envioRecebido, head, ServerClient):
     arquivo = "a"
-    arquivo = ServerClient + tipo_log_string + ".txt"
+    arquivo = ServerClient + ".txt"
     with open(arquivo, "a+") as file:
         file.write("\n")
         file.write("{}".format(datetime.datetime.now()))
-        file.write("\n")
         file.write(" /")
         file.write(envioRecebido)
         file.write(" /")
-        file.write(package[0])
+        file.write(f"{head[0]}")
         file.write(" /")
-        file.write("{}".format(len(package)))
-        if package[0] == 3:
+        file.write("{}".format(head[5]+14))
+        if head[0] == 3:
             file.write(" /")
-            file.write(package[4])
+            file.write(f"{head[4]}")
             file.write(" /")
-            file.write(package[3])
+            file.write(f"{head[3]}")

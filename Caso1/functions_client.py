@@ -1,6 +1,7 @@
 from enlace import *
 import numpy as np
 import math
+import datetime
 
 def ligaCom(serialName):
     com1 = enlace(serialName)
@@ -78,6 +79,7 @@ def makePacoteHead(arquivo,com1, tipo, tIm):
     payload = arquivo[:114]
     print(headByte)
     pacote = headByte + payload + eopByte
+    print("LALALLALALALALLLLALLALA")
     com1.sendData(pacote)
     print(pacote)    
     print("-----------------")
@@ -87,11 +89,13 @@ def makePacoteHead(arquivo,com1, tipo, tIm):
     time.sleep(5)
     inicio = time.time()
     print("------------------------------")
+    write_log("envio", headByte, "Client1" )
     while com1.rx.getIsEmpty():#Comando para abrir port :sudo chmod 777 /dev/ttyACM<numero da porta>
         if time.time() - inicio >= 5:
             resposta = str(input("Servidor inativo, deseja tentar novamente? S/N : "))
             if resposta.upper() == "S":
                 com1.sendData(pacote)
+                write_log("envio", headByte, "Client1" )
                 print("enviado novamente")
                 inicio = time.time()
                 pass
@@ -124,6 +128,7 @@ def makePacoteClient(arquivo,com1, tipo, qtdPacotes):
         pacote = headByte + payload + eopByte
         print(pacote)
         com1.sendData(pacote)
+        write_log("envio", headByte, "Client1" )
         
         print("-----------------")
         print("Pacote enviado: ", len(pacote))
@@ -141,9 +146,11 @@ def makePacoteClient(arquivo,com1, tipo, qtdPacotes):
                 pacote = headByte + eopByte
                 print(pacote)
                 com1.sendData(pacote)
+                write_log("envio", headByte, "Client1" )
                 desligaCom(com1, inicio)
                 exit()
         confirma4, tipo4 = com1.getData(14)
+        write_log("recebe", confirma4, "Client1" )
         print("PAYLOAD RECEBIDO: ", confirma4)
         if confirma4[0] == 4:
             print("TIPO DE MENSAGEM: ", confirma4[0]  )
@@ -160,20 +167,20 @@ def makePacoteClient(arquivo,com1, tipo, qtdPacotes):
 
             
 
-
-def recebePacotes(arquivo, com1):
-    i = 0
-    while True:
-        head, lenHead = com1.getData(10)
-        print("......")
-        print("head recebido: ", head[4])
-        print(head[5])
-        payload, lenPayload = com1.getData(head[5])
-        print(payload)
-        arquivo += payload
-        eop, lenEOP = com1.getData(4)
-        i += 1
-        if head[3] == head[4]:
-            break
-    
-    return arquivo
+def write_log(envioRecebido, head, ServerClient):
+    arquivo = "a"
+    arquivo = ServerClient + ".txt"
+    with open(arquivo, "a+") as file:
+        file.write("\n")
+        file.write("{}".format(datetime.datetime.now()))
+        file.write(" /")
+        file.write(envioRecebido)
+        file.write(" /")
+        file.write(f"{head[0]}")
+        file.write(" /")
+        file.write("{}".format(head[5]+14))
+        if head[0] == 3:
+            file.write(" /")
+            file.write(f"{head[4]}")
+            file.write(" /")
+            file.write(f"{head[3]}")
