@@ -32,7 +32,7 @@ def int_1_byte(data):
 
 def makeHead(arquivo, tipoMensagem, qtdPacotes, original):
     """Se tipo = 0 é handshake se tipo != 0 é parte do arquivo"""
-    tamanhoArquivo = len(original)
+    tamanhoArquivo = original
     print(f"O arquivo tem {tamanhoArquivo} bytes" )
     qtdPacotes = math.ceil(tamanhoArquivo/114)
     print(f"Quantidade de Pacotes: {qtdPacotes}")
@@ -67,8 +67,8 @@ def makeHead(arquivo, tipoMensagem, qtdPacotes, original):
     
 
 
-def makePacoteHead(arquivo,com1, tipo, qIm):
-    headInt = makeHead(arquivo,tipo, qIm, arquivo)
+def makePacoteHead(arquivo,com1, tipo, tIm):
+    headInt = makeHead(arquivo,tipo, 0, tIm)
     headInt[5] = 4 
     eopInt = [170,187,204,221]
     eopByte = int_1_byte(eopInt)
@@ -101,20 +101,24 @@ def makePacoteHead(arquivo,com1, tipo, qIm):
 
 def makePacoteClient(arquivo,com1, tipo, qtdPacotes):
     tIm = len(arquivo)
+    print("tim: ",tIm)
     qtdPacotes = math.ceil(tIm/114)
     eopInt = [170,187,204,221]
     eopByte = int_1_byte(eopInt)
-    arquivoo = arquivo
     i = 0
-    while i <= qtdPacotes:
-        headInt = makeHead(arquivo,tipo, qtdPacotes, arquivoo)
+    while i < qtdPacotes:
+        headInt = makeHead(arquivo, tipo, 0, tIm)
         payload = arquivo[:114]
+        headInt[4] += i
+        print("----------", headInt[3])
+        print("----------", headInt[4])
         if headInt[3] == headInt[4]:
+            print("--------------------entrou")
             headInt[5] = headInt[2]
         else:
             headInt[5] = 114
         print(f"Tamanho do arquivo {i+1} é {headInt[5]}")
-        headInt[4] += i
+        
         print("Head atual: ", headInt)
         headByte = int_1_byte(headInt)
         print(headByte)
@@ -125,7 +129,7 @@ def makePacoteClient(arquivo,com1, tipo, qtdPacotes):
         print("-----------------")
         print("Pacote enviado: ", len(pacote))
         print("-----------------")
-        confirma4, tipo4 = com1.getData(18)
+        confirma4, tipo4 = com1.getData(14)
         print("PAYLOAD RECEBIDO: ", confirma4)
         if confirma4[0] == 4:
             print("TIPO DE MENSAGEM: ", confirma4[0]  )
