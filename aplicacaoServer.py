@@ -2,7 +2,6 @@ from enlace import *
 import numpy as np
 import time
 
-from functions_client import *
 from functions_server import *
 
 #Comando para abrir port:   sudo chmod 777 /dev/ttyACM<numero da porta>

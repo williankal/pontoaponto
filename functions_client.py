@@ -98,7 +98,6 @@ def makePacoteHead(arquivo,com1, tipo, tIm):
             else:
                 desligaCom(com1, inicio)
                 exit()
-
 def makePacoteClient(arquivo,com1, tipo, qtdPacotes):
     tIm = len(arquivo)
     print("tim: ",tIm)
@@ -129,6 +128,21 @@ def makePacoteClient(arquivo,com1, tipo, qtdPacotes):
         print("-----------------")
         print("Pacote enviado: ", len(pacote))
         print("-----------------")
+        inicio = time.time()
+        while com1.rx.getIsEmpty():
+            if time.time() - inicio <= 5:
+                pass
+            else:
+                print("TIME OUT")
+                erro = []
+                headInt = makeHead(erro, com1, 6, 0) ########################
+                headByte = int_1_byte(headInt)
+                print(headByte)
+                pacote = headByte + eopByte
+                print(pacote)
+                com1.sendData(pacote)
+                desligaCom(com1, inicio)
+                exit()
         confirma4, tipo4 = com1.getData(14)
         print("PAYLOAD RECEBIDO: ", confirma4)
         if confirma4[0] == 4:
@@ -137,6 +151,10 @@ def makePacoteClient(arquivo,com1, tipo, qtdPacotes):
             headInt[1] = len(payload)
             print("-------------------------")
             i +=1
+        elif confirma4[0] == 6:
+            print("TIPO DE MENSAGEM: ", confirma4[0]  )
+            print("-------------------------")
+            print(f"Reenviando arquivo {headInt[4]}")
         else:
             break
 

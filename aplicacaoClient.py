@@ -20,7 +20,7 @@ def main():
             print("Enviando Handshake")
             handshakeInt = [0, 0, 255, 255]
             handshakeByte = int_1_byte(handshakeInt)
-            makePacoteHead(handshakeByte, com1, 1, tIm)
+            makePacoteHead(handshakeByte, com1, 1)
             headHandshake, lenteste = com1.getData(10)
             print(headHandshake)
             payloadHandshake, lenteste  = com1.getData(4)
