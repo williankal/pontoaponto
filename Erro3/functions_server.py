@@ -99,6 +99,7 @@ def makePacoteHead(arquivo, com1, tipo):
     payload = arquivo[:114]
     print(headByte)
     pacote = headByte + payload + eopByte
+    time.sleep(20)
     com1.sendData(pacote)
 
 def recebePacotesHandshake(arquivo, com1):
