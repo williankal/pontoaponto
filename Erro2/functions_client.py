@@ -89,13 +89,13 @@ def makePacoteHead(arquivo,com1, tipo, tIm):
     time.sleep(5)
     inicio = time.time()
     print("------------------------------")
-    write_log("envio", headByte, "Client1" )
+    write_log("envio", headByte, "Erro2" )
     while com1.rx.getIsEmpty():#Comando para abrir port :sudo chmod 777 /dev/ttyACM<numero da porta>
         if time.time() - inicio >= 5:
             resposta = str(input("Servidor inativo, deseja tentar novamente? S/N : "))
             if resposta.upper() == "S":
                 com1.sendData(pacote)
-                write_log("envio", headByte, "Client1" )
+                write_log("envio", headByte, "Erro2" )
                 print("enviado novamente")
                 inicio = time.time()
                 pass
@@ -109,6 +109,7 @@ def makePacoteClient(arquivo,com1, tipo, qtdPacotes):
     eopInt = [170,187,204,221]
     eopByte = int_1_byte(eopInt)
     i = 0
+    teste = 0
     while i < qtdPacotes:
         headInt = makeHead(arquivo, tipo, 0, tIm)
         payload = arquivo[:114]
@@ -124,11 +125,16 @@ def makePacoteClient(arquivo,com1, tipo, qtdPacotes):
         
         print("Head atual: ", headInt)
         headByte = int_1_byte(headInt)
+        if teste == 0 and headInt[4] == 2:
+            headInt[4] = 1
+            teste += 1 
+            print("teste", teste)
+            headByte = int_1_byte(headInt)
         print(headByte)
         pacote = headByte + payload + eopByte
         print(pacote)
         com1.sendData(pacote)
-        write_log("envio", headByte, "Client1" )
+        write_log("envio", headByte, "Erro2" )
         
         print("-----------------")
         print("Pacote enviado: ", len(pacote))
@@ -146,11 +152,11 @@ def makePacoteClient(arquivo,com1, tipo, qtdPacotes):
                 pacote = headByte + eopByte
                 print(pacote)
                 com1.sendData(pacote)
-                write_log("envio", headByte, "Client1" )
+                write_log("envio", headByte, "Erro2" )
                 desligaCom(com1, inicio)
                 exit()
         confirma4, tipo4 = com1.getData(14)
-        write_log("recebe", confirma4, "Client1" )
+        write_log("recebe", confirma4, "Erro2" )
         print("PAYLOAD RECEBIDO: ", confirma4)
         if confirma4[0] == 4:
             print("TIPO DE MENSAGEM: ", confirma4[0]  )
