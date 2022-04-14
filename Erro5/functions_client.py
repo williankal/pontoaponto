@@ -89,13 +89,13 @@ def makePacoteHead(arquivo,com1, tipo, tIm):
     time.sleep(5)
     inicio = time.time()
     print("------------------------------")
-    write_log("envio", headByte, "Client1" )
+    write_log("envio", headByte, "Erro5" )
     while com1.rx.getIsEmpty():#Comando para abrir port :sudo chmod 777 /dev/ttyACM<numero da porta>
         if time.time() - inicio >= 5:
             resposta = str(input("Servidor inativo, deseja tentar novamente? S/N : "))
             if resposta.upper() == "S":
                 com1.sendData(pacote)
-                write_log("envio", headByte, "Client1" )
+                write_log("envio", headByte, "Erro5" )
                 print("enviado novamente")
                 inicio = time.time()
                 pass
@@ -128,14 +128,14 @@ def makePacoteClient(arquivo,com1, tipo, qtdPacotes):
         pacote = headByte + payload + eopByte
         print(pacote)
         com1.sendData(pacote)
-        write_log("envio", headByte, "Client1" )
+        write_log("envio", headByte, "Erro5" )
         
         print("-----------------")
         print("Pacote enviado: ", len(pacote))
         print("-----------------")
         inicio = time.time()
         while com1.rx.getIsEmpty():
-            if time.time() - inicio <= 5:
+            if time.time() - inicio <= 20:
                 pass
             else:
                 print("TIME OUT")
@@ -146,11 +146,11 @@ def makePacoteClient(arquivo,com1, tipo, qtdPacotes):
                 pacote = headByte + eopByte
                 print(pacote)
                 com1.sendData(pacote)
-                write_log("envio", headByte, "Client1" )
+                write_log("envio", headByte, "Erro5" )
                 desligaCom(com1, inicio)
                 exit()
         confirma4, tipo4 = com1.getData(14)
-        write_log("recebe", confirma4, "Client1" )
+        write_log("recebe", confirma4, "Erro5" )
         print("PAYLOAD RECEBIDO: ", confirma4)
         if confirma4[0] == 4:
             print("TIPO DE MENSAGEM: ", confirma4[0]  )
