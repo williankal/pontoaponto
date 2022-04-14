@@ -142,13 +142,12 @@ def recebePacotes(com1, ocioso, timeout):
             print("Contador:", contador)
             print("-------------------------------------")
             eop, lenEOP = com1.getData(4)
-            if len(payload) == head[5] and contador <= head[3]:
+            if len(payload) == head[5] and contador <= head[3] and contador == head[4]:
                 print("Contador:", contador)
                 makePacoteServer(byte1, com1, 4)
                 imagemRece += payload
                 print(payload)
                 if contador == head[3]:
-                    write_log()
                     ocioso = False
                     print(imagemRece)
                     return imagemRece, ocioso, True
@@ -157,7 +156,6 @@ def recebePacotes(com1, ocioso, timeout):
 
             else:
                 makePacoteServer(byte1, com1, 6)
-
         else: 
             time.sleep(1)
             if time.time() - time2 > 20:
