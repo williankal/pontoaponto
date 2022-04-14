@@ -22,7 +22,7 @@ def main():
             handshakeByte = int_1_byte(handshakeInt)
             makePacoteHead(handshakeByte, com1, 1, 0)
             headHandshake, lenteste = com1.getData(18)
-            write_log("recebe", headHandshake, "Client1" )
+            write_log("recebe", headHandshake, "Erro4" )
             print("Handshake recebido: ", (headHandshake))
 
             

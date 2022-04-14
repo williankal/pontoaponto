@@ -144,6 +144,7 @@ def recebePacotes(com1, ocioso, timeout):
             eop, lenEOP = com1.getData(4)
             if len(payload) == head[5] and contador <= head[3] and contador == head[4]:
                 print("Contador:", contador)
+                time.sleep(20)
                 makePacoteServer(byte1, com1, 4)
                 imagemRece += payload
                 print(payload)
