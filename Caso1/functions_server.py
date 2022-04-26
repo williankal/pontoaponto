@@ -26,14 +26,17 @@ def byte_int(data):
 
 def int_1_byteHead(data):
     entireData = bytearray()
+    x = 0
     for i in data:
-        if(i < data[8]):
+        if x < 8:
             intByte = (i).to_bytes(1, byteorder ='big')
             entireData.append(intByte[0])
         else:
             intByte = (i).to_bytes(2, byteorder ='big')
             entireData.append(intByte[0])
-            entireData.append(intByte[1])    
+            entireData.append(intByte[1]) 
+        x+=1
+
 
     return entireData
 
