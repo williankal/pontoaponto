@@ -5,6 +5,7 @@ import numpy as np
 import math
 from functions_client import *
 import datetime
+from crc import CrcCalculator, Crc16
 
 def espera(com1):
     while com1.rx.getIsEmpty():
@@ -23,8 +24,21 @@ def byte_int(data):
     int_val = int.from_bytes(data, "little")
     return int_val
 
+def int_1_byteHead(data):
+    entireData = bytearray()
+    for i in data:
+        if(i < data[8]):
+            intByte = (i).to_bytes(1, byteorder ='big')
+            entireData.append(intByte[0])
+        else:
+            intByte = (i).to_bytes(2, byteorder ='big')
+            entireData.append(intByte[0])
+            entireData.append(intByte[1])    
 
-def makeHead(arquivo, tipoMensagem):
+    return entireData
+
+
+def makeHead(arquivo, tipoMensagem, payload):
     """Se tipo = 0 é handshake se tipo != 0 é parte do arquivo"""
     tamanhoArquivo = len(arquivo)
     print(f"O arquivo tem {tamanhoArquivo} bytes" )
@@ -37,24 +51,27 @@ def makeHead(arquivo, tipoMensagem):
     ultimoSucesso = 0
     idServidor = 11
     confirma4 = 0
+    use_table = True
+    crc_calculator = CrcCalculator(Crc16.CCITT, use_table)
+    checksum = crc_calculator.calculate_checksum(payload)
     if tipoMensagem == 1:
         #Handshake
-        heads = [tipoMensagem, 0, idServidor, qtdPacotes ,pacoteAtual,tamanhoPacoteAtual, numeroErrro, ultimoSucesso, 0, 0]
+        heads = [tipoMensagem, 0, idServidor, qtdPacotes ,pacoteAtual,tamanhoPacoteAtual, numeroErrro, ultimoSucesso, checksum]
     elif tipoMensagem == 2:
         #Confirmação Handshake
-        heads = [tipoMensagem, 0, tamUltimoPacote, qtdPacotes ,pacoteAtual,tamanhoPacoteAtual, numeroErrro, ultimoSucesso, 0, 0]
+        heads = [tipoMensagem, 0, tamUltimoPacote, qtdPacotes ,pacoteAtual,tamanhoPacoteAtual, numeroErrro, ultimoSucesso, checksum]
     elif tipoMensagem == 3:
         #Dados
-        heads = [tipoMensagem, 0, tamUltimoPacote, qtdPacotes ,pacoteAtual,tamanhoPacoteAtual, numeroErrro, ultimoSucesso, 0, 0]
+        heads = [tipoMensagem, 0, tamUltimoPacote, qtdPacotes ,pacoteAtual,tamanhoPacoteAtual, numeroErrro, ultimoSucesso, checksum]
     elif tipoMensagem == 4:
         #Confirmação de dados
-        heads = [tipoMensagem, 0, confirma4, qtdPacotes ,pacoteAtual,tamanhoPacoteAtual, numeroErrro, ultimoSucesso, 0, 0]
+        heads = [tipoMensagem, 0, confirma4, qtdPacotes ,pacoteAtual,tamanhoPacoteAtual, numeroErrro, ultimoSucesso, checksum]
     elif tipoMensagem == 5:
         #TimeOut
-        heads = [tipoMensagem, 0, tamUltimoPacote, qtdPacotes ,pacoteAtual,tamanhoPacoteAtual, numeroErrro, ultimoSucesso, 0, 0]
+        heads = [tipoMensagem, 0, tamUltimoPacote, qtdPacotes ,pacoteAtual,tamanhoPacoteAtual, numeroErrro, ultimoSucesso, checksum]
     elif tipoMensagem == 6:
         #Erro
-        heads = [tipoMensagem, 0, tamUltimoPacote, qtdPacotes ,pacoteAtual,tamanhoPacoteAtual, numeroErrro, ultimoSucesso, 0, 0]
+        heads = [tipoMensagem, 0, tamUltimoPacote, qtdPacotes ,pacoteAtual,tamanhoPacoteAtual, numeroErrro, ultimoSucesso, checksum]
 
     
     return heads
@@ -62,7 +79,8 @@ def makeHead(arquivo, tipoMensagem):
 
 
 def makePacoteServer(arquivo, com1, tipo):
-    headInt = makeHead(arquivo, tipo)
+    payload = bytes([])
+    headInt = makeHead(arquivo, tipo, payload)
     eopInt = [170,187,204,221]
     eopByte = int_1_byte(eopInt)
     time.sleep(2)
@@ -77,7 +95,7 @@ def makePacoteServer(arquivo, com1, tipo):
             headInt[5] = headInt[2]
         else:
             headInt[5] = 114
-        headByte = int_1_byte(headInt)
+        headByte = int_1_byteHead(headInt)
         print(headInt)
         headInt[4] += 1
         print(headByte)
@@ -89,14 +107,14 @@ def makePacoteServer(arquivo, com1, tipo):
         print("-----------------")
 
 def makePacoteHead(arquivo, com1, tipo):
-    headInt = makeHead(arquivo, tipo)
+    payload = arquivo[:114]
+    headInt = makeHead(arquivo, tipo, payload)
     headInt[5] = 4
     eopInt = [170,187,204,221]
     eopByte = int_1_byte(eopInt)
     time.sleep(2)
-    headByte = int_1_byte(headInt)
+    headByte = int_1_byteHead(headInt)
     print(headInt)
-    payload = arquivo[:114]
     print(headByte)
     pacote = headByte + payload + eopByte
     com1.sendData(pacote)
